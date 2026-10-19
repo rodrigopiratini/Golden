@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { isSimulation } from "@/lib/whatsapp";
 import { formatPhone } from "@/lib/phone";
 import { PageHeader } from "@/components/ui";
+import { appUrl as getAppUrl } from "@/lib/format";
 import { changePassword, createUser } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const session = await getSession();
   const users = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });
   const sim = isSimulation();
-  const appUrl = process.env.APP_URL ?? "";
+  const appUrl = getAppUrl();
   const env = (k: string) => !!process.env[k];
 
   const checks = [
@@ -23,7 +24,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     { label: "Chave secreta do app (WHATSAPP_APP_SECRET) — valida o webhook", ok: env("WHATSAPP_APP_SECRET") },
     { label: "Token de verificação do webhook (WHATSAPP_VERIFY_TOKEN)", ok: env("WHATSAPP_VERIFY_TOKEN") },
     { label: "WhatsApp que recebe pedidos do catálogo (COMPANY_WHATSAPP)", ok: env("COMPANY_WHATSAPP") },
-    { label: "URL pública da plataforma (APP_URL)", ok: env("APP_URL") && !appUrl.includes("localhost") },
+    { label: `URL pública da plataforma: ${appUrl}`, ok: !appUrl.includes("localhost") },
   ];
 
   return (

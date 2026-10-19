@@ -34,11 +34,13 @@ npm run dev                   # http://localhost:3000
 
 Para remover os contatos de demonstração: `npm run seed:demo -- --clean`.
 
-## Publicar (sugestão: Vercel + Neon, ambos com plano gratuito para começar)
+## Publicar (Vercel + Supabase)
 
-1. **Banco:** crie um projeto em [neon.tech](https://neon.tech) (ou Supabase). Copie a *connection string pooled* para `DATABASE_URL` e a *direct* para `DIRECT_URL`.
-2. **App:** importe este repositório em [vercel.com](https://vercel.com) e cadastre as variáveis do `.env.example`. Em `APP_URL`, coloque o endereço final (ex.: `https://crm.goldenartefatosdemadeira.com.br`).
-3. Rode uma vez, apontando para o banco de produção: `npx prisma migrate deploy && npm run seed`.
+1. **Banco (Supabase):** em *Connect → ORMs → Prisma*, copie as duas URLs. Acrescente `&schema=golden_crm` (ou `?schema=golden_crm`) nas duas. As tabelas ficam isoladas nesse schema, então dá para usar um projeto Supabase que já existe.
+   - `DATABASE_URL` = pooler de transação (porta 6543, com `pgbouncer=true`)
+   - `DIRECT_URL` = pooler de sessão (porta 5432)
+2. **App (Vercel):** importe o repositório e cadastre as variáveis do `.env.example`. `APP_URL` é opcional: sem ela, usa o domínio da Vercel.
+3. O build da Vercel (`npm run vercel-build`) cria/atualiza as tabelas e roda o seed sozinho.
 4. Entre com `ADMIN_EMAIL` / `ADMIN_PASSWORD` e troque a senha em **Configurações**.
 
 ## Conectar o WhatsApp (Cloud API oficial)

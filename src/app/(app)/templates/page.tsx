@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { SEGMENT_MAP, SEGMENTS } from "@/lib/stages";
 import { PageHeader } from "@/components/ui";
+import { appUrl as getAppUrl } from "@/lib/format";
 import { PhonePreview } from "@/components/PhonePreview";
 import { saveTemplate } from "./actions";
 
@@ -12,7 +13,7 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
   const { edit } = await searchParams;
   const templates = await prisma.template.findMany({ orderBy: { createdAt: "asc" }, include: { _count: { select: { campaigns: true } } } });
   const editing = edit && edit !== "new" ? templates.find((t) => t.id === edit) : null;
-  const appUrl = process.env.APP_URL ?? "https://sua-plataforma.com";
+  const appUrl = getAppUrl();
 
   return (
     <>

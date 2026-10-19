@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Ban, MessageCircle, MousePointerClick, StickyNote, Trash2 } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { brl, dateTime } from "@/lib/format";
+import { appUrl as getAppUrl, brl, dateTime } from "@/lib/format";
 import { formatPhone } from "@/lib/phone";
 import { PageHeader, SegmentBadge, StageBadge } from "@/components/ui";
 import { ContactForm } from "../ContactForm";
@@ -31,7 +31,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
     ...contact.clicks.map((k) => ({ at: k.createdAt, kind: "click" as const, k })),
   ].sort((x, y) => y.at.getTime() - x.at.getTime());
 
-  const appUrl = process.env.APP_URL ?? "";
+  const appUrl = getAppUrl();
 
   return (
     <>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { num, pct } from "@/lib/format";
+import { campaignReplies } from "@/lib/metrics";
 import { Empty, PageHeader } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +18,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 export default async function CampaignsPage() {
   const campaigns = await prisma.campaign.findMany({ orderBy: { createdAt: "desc" }, include: { template: { select: { name: true } } } });
   const stats = await prisma.campaignRecipient.groupBy({ by: ["campaignId", "status"], _count: { _all: true } });
-  const replies = await prisma.$queryRaw<{ campaignId: string; replied: bigint }[]>`
-    SELECT r."campaignId", COUNT(DISTINCT r."contactId") AS replied
-    FROM "CampaignRecipient" r
-    JOIN "Message" m ON m."contactId" = r."contactId" AND m.direction = 'IN' AND m."createdAt" >= r."sentAt"
-    WHERE r.status = 'SENT'
-    GROUP BY r."campaignId"`;
+  const replies = await campaignReplies();
   const get = (id: string, s: string) => stats.find((x) => x.campaignId === id && x.status === s)?._count._all ?? 0;
 
   return (
@@ -51,7 +47,7 @@ export default async function CampaignsPage() {
                 const sent = get(c.id, "SENT");
                 const pending = get(c.id, "PENDING");
                 const total = sent + pending + get(c.id, "FAILED") + get(c.id, "SKIPPED");
-                const replied = Number(replies.find((r) => r.campaignId === c.id)?.replied ?? 0);
+                const replied = replies.get(c.id) ?? 0;
                 return (
                   <tr key={c.id} className="hover:bg-paper">
                     <td className="px-4 py-3">

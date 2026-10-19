@@ -1,0 +1,262 @@
+[
+ {
+  "name": "Porta-Pães com Tampa Retrátil",
+  "category": "Mesa Posta",
+  "price": 89.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_32092d0e2a7c4849883cb1ab1a7bf4e0~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/porta-p%C3%A3es",
+  "sortOrder": 0
+ },
+ {
+  "name": "Tábua de Churrasco com Bandeja e Tigelas de Alumínio",
+  "category": "Churrasco",
+  "price": 129,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_7b05bb484aa44bb49ff46fd4c604fa03~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/t%C3%A1bua-de-churrasco-com-bandeja-e-tijelas-de-alum%C3%ADnio-1",
+  "sortOrder": 1
+ },
+ {
+  "name": "Luminária de Mesa com Suporte para Celular e Carregador",
+  "category": "Iluminar",
+  "price": 129,
+  "promoPrice": 119,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_2cb0cc74139342bf805398e32b6d23fd~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/estantetexas",
+  "sortOrder": 2
+ },
+ {
+  "name": "Tábua Safari com Alça",
+  "category": "Petiscar",
+  "price": 59,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_dedbdbf49df64a5291cb0af0e8d01f1a~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/t%C3%A1bua-safari-al%C3%A7a-1",
+  "sortOrder": 3
+ },
+ {
+  "name": "Petisqueira com Suporte para Taças",
+  "category": "Petiscar",
+  "price": 59.9,
+  "promoPrice": 49.9,
+  "ribbon": "NOVO",
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_68873c8bfd144d8c8de5a86fb70627fe~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/petisqueira-com-suporte-para-ta%C3%A7as",
+  "sortOrder": 4
+ },
+ {
+  "name": "Mesa com Tábua para Churrasco",
+  "category": "Churrasco",
+  "price": 179,
+  "promoPrice": 99.9,
+  "ribbon": "NOVO",
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_0c0c3de95fea4a9f8494744f985119aa~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/mesa-para-churrasco",
+  "sortOrder": 5
+ },
+ {
+  "name": "Conjunto de Nichos Quadrados (3 peças)",
+  "category": "Organize",
+  "price": 49.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_c814ce3eabac466c9ecbc560a76cfe55~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/conjunto-nichos-quadrados-3-pe%C3%A7as",
+  "sortOrder": 6
+ },
+ {
+  "name": "Sapateira 2 Andares",
+  "category": "Organize",
+  "price": 59.9,
+  "promoPrice": 49.9,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_9bdfc02344404d9bbaa2c5da2afc4145~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/sapateira-2-andares",
+  "sortOrder": 7
+ },
+ {
+  "name": "Tábua Safari G com Ramekin",
+  "category": "Petiscar",
+  "price": 59.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_1727739739b145e9ab3843c76df1e927~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/t%C3%A1bua-safari-g-com-ramekin",
+  "sortOrder": 8
+ },
+ {
+  "name": "Luminária Infantil Cachorro",
+  "category": "Iluminar",
+  "price": 99.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_18189bdcaebf481e9775fc650558c9fb~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/c%C3%B3pia-de-aparador-madri",
+  "sortOrder": 9
+ },
+ {
+  "name": "Aparador de Livros Bicicleta",
+  "category": "Organize",
+  "price": 24.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_fa4029bc7e754cb797b77214bdd13429~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/aparador-de-livros-bicicleta",
+  "sortOrder": 10
+ },
+ {
+  "name": "Petisqueira de Encaixe Coração",
+  "category": "Petiscar",
+  "price": 39.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_fb05d68c56e947859ee94156b5abf91d~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/petisqueira-de-encaixe-cora%C3%A7%C3%A3o",
+  "sortOrder": 11
+ },
+ {
+  "name": "Petisqueiras 4 Corações",
+  "category": "Petiscar",
+  "price": 29.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_3368972f5d324d499abe051e46ac368b~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/petisqueiras-4-cora%C3%A7%C3%B5es",
+  "sortOrder": 12
+ },
+ {
+  "name": "Bandeja Coração",
+  "category": "Mesa Posta",
+  "price": 29.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_bc6c37de5c734c2699db231c4dd183e8~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/rack-tv-versailles",
+  "sortOrder": 13
+ },
+ {
+  "name": "Kit Porta-Guardanapo Coração (2 peças)",
+  "category": "Mesa Posta",
+  "price": 9.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_f383cf43d1084842a0bc40becbbd68d8~mv2.jpeg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/banco-batll%C3%B3",
+  "sortOrder": 14
+ },
+ {
+  "name": "Tábua Coração",
+  "category": "Petiscar",
+  "price": 24.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_e8bee2ffd7254a3ba24a4e342bd37d12~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/mesa-de-jantar-barcelona",
+  "sortOrder": 15
+ },
+ {
+  "name": "Bandeja para Servir",
+  "category": "Mesa Posta",
+  "price": 39.9,
+  "promoPrice": 29.9,
+  "ribbon": "OFERTA",
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_ca62ae235e07425a86af5c265f612b09~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/mesa-london-eye",
+  "sortOrder": 16
+ },
+ {
+  "name": "Gamela Safari Retangular",
+  "category": "Petiscar",
+  "price": 99,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_3e0565e27ccd434986de94cb941845a3~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/gamela-safari-retangular-1",
+  "sortOrder": 17
+ },
+ {
+  "name": "Porta-Espeto Cantinho do Churrasco",
+  "category": "Churrasco",
+  "price": 44.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_4cef11d0956d48e4a04950bdfe424265~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/porta-espeto-cantinho-do-churrasco",
+  "sortOrder": 18
+ },
+ {
+  "name": "Petisqueira Gato",
+  "category": "Petiscar",
+  "price": 29.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_fa5135c02cb04abca991ccab8198495b~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/petisqueira-gato",
+  "sortOrder": 19
+ },
+ {
+  "name": "Luminária Infantil Girafa",
+  "category": "Iluminar",
+  "price": 89.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_bd8dc342e8f041b1a11f0a90b3b536bf~mv2.jpg/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/mesa-de-centro-champs-%C3%A9lys%C3%A9e",
+  "sortOrder": 20
+ },
+ {
+  "name": "Petisqueira 4 Corações",
+  "category": "Petiscar",
+  "price": 29.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_294800ef93314969b8e8d7c64ecaaf95~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/petisqueira-4-cora%C3%A7%C3%B5es",
+  "sortOrder": 21
+ },
+ {
+  "name": "Petisqueira Redonda de Encaixe",
+  "category": "Petiscar",
+  "price": 39.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_876fd2f306d940159f4de4fc32b7ff8e~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/petisqueira-redonda-de-encaixe",
+  "sortOrder": 22
+ },
+ {
+  "name": "Tábua Decorativa com Gravação",
+  "category": "Personalize",
+  "price": 24.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_8ff7f43aa6f643cf9ba60d8c9d58f370~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/t%C3%A1bua-decorativa-com-grava%C3%A7%C3%A3o",
+  "sortOrder": 23
+ },
+ {
+  "name": "Petisqueira Magia",
+  "category": "Petiscar",
+  "price": 29.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_8be76c65161840e8925c038858d0f4d5~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/petisqueira-magia",
+  "sortOrder": 24
+ },
+ {
+  "name": "Petisqueira Coração 5 Divisórias",
+  "category": "Petiscar",
+  "price": 29.9,
+  "promoPrice": null,
+  "ribbon": null,
+  "imageUrl": "https://static.wixstatic.com/media/b8c2a8_a87a2cb0e9064c0c87b2d40bab272b1b~mv2.png/v1/fit/w_800,h_800,q_90/file.jpg",
+  "siteUrl": "https://www.goldenartefatosdemadeira.com/product-page/petisqueira-cora%C3%A7%C3%A3o-5-divis%C3%B3rias",
+  "sortOrder": 25
+ }
+]

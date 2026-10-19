@@ -1,0 +1,232 @@
+// Golden CRM — modelo de dados
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  ATENDENTE
+}
+
+/// Segmento usado para escolher a abordagem certa
+enum Segment {
+  CLIENTE // já comprou
+  FEIRA // contato coletado em feira/evento
+  B2B // lojista, empresa, arquiteto
+  OUTRO
+}
+
+/// Etapas do funil (colunas do kanban)
+enum Stage {
+  NOVO
+  ENVIADO
+  LIDO
+  RESPONDEU
+  INTERESSADO
+  NEGOCIANDO
+  GANHO
+  PERDIDO
+  OPT_OUT
+}
+
+enum Direction {
+  OUT
+  IN
+}
+
+enum MessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  RECEIVED
+}
+
+enum CampaignStatus {
+  DRAFT
+  RUNNING
+  PAUSED
+  DONE
+}
+
+enum RecipientStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum ClickKind {
+  CATALOG_VIEW
+  PRODUCT_WHATSAPP
+  PRODUCT_SITE
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(ATENDENTE)
+  createdAt    DateTime   @default(now())
+  activities   Activity[]
+  contacts     Contact[]
+}
+
+model Contact {
+  id                String    @id @default(cuid())
+  name              String
+  phone             String    @unique // E.164 sem "+", ex: 5554996105511
+  email             String?
+  city              String?
+  state             String?
+  segment           Segment   @default(OUTRO)
+  source            String? // ex: "Feira Expointer 2025", "Site", "Indicação"
+  stage             Stage     @default(NOVO)
+  position          Float     @default(0) // ordem dentro da coluna do kanban
+  tags              String[]
+  notes             String?
+  lastPurchaseAt    DateTime?
+  lastPurchaseDesc  String?
+  totalSpent        Decimal?  @db.Decimal(12, 2)
+  dealValue         Decimal?  @db.Decimal(12, 2) // valor do negócio atual
+  optOut            Boolean   @default(false)
+  unread            Boolean   @default(false) // última mensagem é do cliente e ainda não foi vista
+  token             String    @unique @default(cuid()) // rastreia cliques no catálogo
+  lastInboundAt     DateTime? // janela de 24h do WhatsApp
+  lastInteractionAt DateTime?
+  ownerId           String?
+  owner             User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  messages   Message[]
+  activities Activity[]
+  clicks     Click[]
+  recipients CampaignRecipient[]
+
+  @@index([stage])
+  @@index([segment])
+}
+
+model Message {
+  id           String        @id @default(cuid())
+  contactId    String
+  contact      Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  direction    Direction
+  type         String // template | text | button | interactive | image ...
+  body         String?
+  templateName String?
+  waMessageId  String?       @unique
+  status       MessageStatus @default(QUEUED)
+  error        String?
+  campaignId   String?
+  campaign     Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  createdAt    DateTime      @default(now())
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  readAt       DateTime?
+
+  @@index([contactId, createdAt])
+  @@index([campaignId])
+}
+
+/// Template cadastrado (deve existir com o mesmo nome e idioma no WhatsApp Manager da Meta)
+model Template {
+  id          String     @id @default(cuid())
+  name        String // nome exato na Meta, ex: reativacao_natal
+  language    String     @default("pt_BR")
+  category    String     @default("MARKETING")
+  segment     Segment? // segmento sugerido
+  body        String // texto com {{1}} = primeiro nome
+  headerImage String? // URL de imagem do cabeçalho (opcional)
+  /// botão de URL dinâmica: a Meta completa a URL com o token do contato (catálogo rastreado)
+  urlButton   Boolean    @default(true)
+  quickReplies String[] // ex: ["Não tenho interesse"]
+  active      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  campaigns   Campaign[]
+
+  @@unique([name, language])
+}
+
+model Campaign {
+  id         String              @id @default(cuid())
+  name       String
+  templateId String
+  template   Template            @relation(fields: [templateId], references: [id])
+  filters    Json // { segments: [], stages: [], sources: [] }
+  status     CampaignStatus      @default(DRAFT)
+  createdAt  DateTime            @default(now())
+  startedAt  DateTime?
+  finishedAt DateTime?
+  recipients CampaignRecipient[]
+  messages   Message[]
+}
+
+model CampaignRecipient {
+  id         String          @id @default(cuid())
+  campaignId String
+  campaign   Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contactId  String
+  contact    Contact         @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  status     RecipientStatus @default(PENDING)
+  error      String?
+  sentAt     DateTime?
+
+  @@unique([campaignId, contactId])
+  @@index([campaignId, status])
+}
+
+model Product {
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  description String?
+  category   String // Mesa Posta, Petiscar, Churrasco, Iluminar, Organize, Personalize
+  price      Decimal  @db.Decimal(10, 2)
+  promoPrice Decimal? @db.Decimal(10, 2)
+  imageUrl   String?
+  siteUrl    String? // página do produto na loja (comprar online)
+  ribbon     String? // NOVO, OFERTA, MAIS VENDIDO
+  active     Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  clicks     Click[]
+}
+
+model Click {
+  id        String    @id @default(cuid())
+  kind      ClickKind
+  productId String?
+  product   Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  contactId String?
+  contact   Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  createdAt DateTime  @default(now())
+
+  @@index([kind, createdAt])
+}
+
+/// Linha do tempo do contato (mudanças de etapa, notas, eventos)
+model Activity {
+  id        String   @id @default(cuid())
+  contactId String
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type      String // STAGE | NOTE | CLICK | IMPORT | CAMPAIGN | OPT_OUT
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([contactId, createdAt])
+}

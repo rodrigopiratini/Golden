@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Identidade Golden: grafite do logo + dourado + tons de madeira clara */
+@theme {
+  --color-ink: #2b2b2b;
+  --color-graphite: #3d3d3d;
+  --color-graphite-2: #4a4a4a;
+  --color-gold: #f2b705;
+  --color-gold-dark: #c99400;
+  --color-gold-soft: #fff5d1;
+  --color-wood: #a8713a;
+  --color-wood-soft: #f3e9dc;
+  --color-paper: #faf7f2;
+  --color-line: #e8e1d5;
+  --color-muted: #77706a;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-saira), var(--font-inter), ui-sans-serif, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+@utility card {
+  @apply rounded-xl border border-line bg-white;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-graphite text-white hover:bg-ink;
+}
+@utility btn-gold {
+  @apply btn bg-gold text-ink hover:bg-gold-dark;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-white text-ink hover:bg-wood-soft;
+}
+@utility input {
+  @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-gold focus:ring-2 focus:ring-gold/30;
+}
+@utility label {
+  @apply mb-1 block text-xs font-medium tracking-wide text-muted uppercase;
+}
+@utility badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap;
+}
+@utility page-title {
+  @apply font-display text-2xl font-semibold tracking-tight text-ink;
+}

@@ -1,0 +1,25 @@
+/* Cores da marca Golden (dourado, grafite e madeira) */
+:root {
+  --primaria: #3D3D3D;
+  --primaria-escura: #2B2B2B;
+  --destaque: #F2B705;
+  --destaque-claro: #FFF5D1;
+  --fundo: #FAF7F2;
+  --surface-2: #F3E9DC;
+  --line: #E8E1D5;
+  --s1: #C99400; --s2: #A8713A; --s3: #3D7CC9;
+}
+.btn { color: #fff; }
+.btn.gold { color: #2B2B2B; }
+.wa { background: #E7F7E5; border-radius: 12px; padding: 12px; font-size: 14px; white-space: pre-wrap; }
+.bolha { max-width: 78%; padding: 8px 12px; border-radius: 12px; font-size: 14px; white-space: pre-wrap; box-shadow: 0 1px 1px rgba(0,0,0,.06); }
+.bolha.out { align-self: flex-end; background: #DCF8C6; border-top-right-radius: 4px; }
+.bolha.in { align-self: flex-start; background: #fff; border-top-left-radius: 4px; }
+.bolha .m { font-size: 11px; color: var(--ink-3); margin-top: 3px; text-align: right; }
+.chat { display: flex; flex-direction: column; gap: 8px; background: #EFE7DD; border-radius: var(--radius); padding: 14px; min-height: 320px; max-height: 60vh; overflow-y: auto; }
+.kanban.k9 { grid-template-columns: repeat(9, minmax(220px, 1fr)); }
+@media (max-width: 900px) { .kanban.k9 { grid-template-columns: repeat(9, 80vw); } }
+.kcol.alvo { outline: 2px dashed var(--destaque); }
+.kcard[draggable=true] { cursor: grab; }
+.dot-c { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+.funil .hb .bar-t { height: 16px; }

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Catálogo · Golden Artefatos de Madeira</title>
+<meta name="description" content="Peças de madeira da Golden Artefatos de Madeira, de Flores da Cunha (RS): tábuas, petisqueiras, bandejas, luminárias e personalizados.">
+<meta name="theme-color" content="#2B2B2B">
+<link rel="icon" href="../assets/icons/gestao-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../src/css/base.css">
+<link rel="stylesheet" href="../src/css/segmento.css">
+<style>
+  .cat-top { background: var(--primaria-escura); color: #fff; padding: 22px 16px 26px; text-align: center; }
+  .cat-top img { width: min(220px, 60vw); }
+  .cat-top .ola { margin-top: 10px; color: var(--destaque-claro); }
+  .cat { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .cat-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .cat-card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--surface-2); }
+  .cat-card .in { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .cat-card .n { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
+  .cat-card .p { font-family: var(--font-t); font-size: 18px; }
+  .cat-card .acoes { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+  .cat-card .btn.wa { background: #25D366; color: #fff; }
+</style>
+</head>
+<body>
+<div id="app"><div class="cat-top">Carregando catálogo…</div></div>
+<script src="../src/vendor/supabase.js"></script>
+<script type="module" src="../src/js/catalogo.js"></script>
+</body>
+</html>

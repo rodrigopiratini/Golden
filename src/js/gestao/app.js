@@ -5,6 +5,7 @@ import * as D from '../dominio.js';
 import { money, money0, int, percent, date, dateShort, esc, sortBy, sum, uid, plural, today } from '../core/fmt.js';
 import { icon, kpi, badge, empty, iniciais, toast, confirmar, modal, closeModal, download, toCSV, waLink } from '../core/ui.js';
 import { hbars } from '../core/charts.js';
+import { seed } from '../seed.js';
 
 const S = () => A.S();
 const agora = () => new Date().toISOString();
@@ -108,6 +109,13 @@ const A = criarApp({
     editarProduto: (el) => editar({ titulo: 'Produto', colecao: 'produtos', campos: CAMPOS_PRODUTO, doc: S().produtos.find((p) => p.id === el.dataset.id) }),
     novoModelo: () => editarModelo(null),
     editarModelo: (el) => editarModelo(S().modelos.find((m) => m.id === el.dataset.id)),
+  },
+  // primeiro acesso de uma empresa nova na nuvem: entra com o catálogo do site e os modelos de mensagem
+  aposEntrar: async () => {
+    const s = S();
+    if (A.store.modo !== 'nuvem' || !A.store.ehGestao() || s.meta.inicializado || s.produtos.length || s.modelos.length) return;
+    const ini = seed({ vazio: true });
+    A.store.commit((st) => { st.produtos.push(...ini.produtos); st.modelos.push(...ini.modelos); Object.assign(st.meta, { inicializado: true, siteUrl: ini.meta.siteUrl, limiteDiario: ini.meta.limiteDiario }); });
   },
   aposRender: (pattern) => { if (pattern === '/funil') ligarArrastar(); if (pattern === '/conversa/:id') { const c = document.querySelector('.chat'); if (c) c.scrollTop = c.scrollHeight; } },
 });

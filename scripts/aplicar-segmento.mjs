@@ -3,6 +3,7 @@
 // Uso: node scripts/aplicar-segmento.mjs        (rode de novo sempre que mudar nome, cores ou ícone)
 // Os ícones são desenhados com o Chromium do Playwright; sem ele, o resto é gerado e os ícones ficam como estão.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { SEGMENTO as S } from '../src/js/segmento.js';
 
 const raiz = new URL('../', import.meta.url);
@@ -16,29 +17,38 @@ const C = { escura: cor('primaria-escura', '#12314D'), primaria: cor('primaria',
 // marca da família: as três barras (cores em segmento.css: --marca-fundo, --marca-a, --marca-b)
 C.marcaFundo = cor('marca-fundo', C.escura); C.marcaA = cor('marca-a', '#FFFFFF'); C.marcaB = cor('marca-b', C.destaque);
 // Gestão: quadrado escuro da marca; app de campo: quadrado na cor primária (as mesmas barras)
-const apps = { gestao: { ...S.gestao, fundo: C.marcaFundo, a: C.marcaA, b: C.marcaB }, ...(S.usuario ? { usuario: { ...S.usuario, fundo: C.primaria, a: '#FFFFFF', b: C.marcaB } } : {}) };
+// Os dois apps têm o mesmo nome embaixo do ícone ("EasyAPP <produto>") e o mesmo ícone;
+// o de gestão leva um selo "G" no canto para não confundir com o app de campo.
+const produto = S.produto || S.nome.replace(/^easy\s*app\s*/i, '') || S.nome;
+const rotulo = S.rotulo || `EasyAPP ${produto}`;
+const apps = { gestao: { ...S.gestao, rotulo, selo: true, fundo: C.marcaFundo, a: C.marcaA, b: C.marcaB }, ...(S.usuario ? { usuario: { ...S.usuario, rotulo, fundo: C.marcaFundo, a: C.marcaA, b: C.marcaB } } : {}) };
 
+// "versão" dos ícones: muda quando mudam cores, nome ou ícone. Vai no endereço (…png?v=…) para o celular
+// perceber que o ícone mudou e trocar o do app instalado (com o mesmo endereço ele guarda o antigo).
+const V = createHash('sha1').update(JSON.stringify([C, S.nome, S.icone, S.logo, S.gestao?.nome, S.usuario?.nome, rotulo, 'selo-g-1'])).digest('hex').slice(0, 8);
+const comVersao = (html) => html.replace(/(assets\/icons\/[\w-]+\.png)(\?v=\w+)?/g, `$1?v=${V}`);
 console.log(`Aplicando "${S.nome}"`);
 for (const [app, a] of Object.entries(apps)) {
   let html = ler(`${app}/index.html`);
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${esc(a.nome)}</title>`)
     .replace(/<meta name="theme-color" content="[^"]*">/, `<meta name="theme-color" content="${C.escura}">`)
-    .replace(/<meta name="apple-mobile-web-app-title" content="[^"]*">/, `<meta name="apple-mobile-web-app-title" content="${esc(a.curto)}">`)
+    .replace(/<meta name="apple-mobile-web-app-title" content="[^"]*">/, `<meta name="apple-mobile-web-app-title" content="${esc(a.rotulo)}">`)
     .replace(/<meta name="description" content="[^"]*">\n?/, '')
     .replace('<link rel="manifest"', `<meta name="description" content="${esc(a.descricao)}">\n<link rel="manifest"`);
+  html = comVersao(html);
   gravar(`${app}/index.html`, html);
   gravar(`${app}/manifest.webmanifest`, JSON.stringify({
-    id: `${S.id}-${app}`, name: a.nome, short_name: a.curto, description: a.descricao, lang: 'pt-BR', start_url: './', scope: './',
+    id: `${S.id}-${app}`, name: a.nome, short_name: a.rotulo, description: a.descricao, lang: 'pt-BR', start_url: './', scope: './',
     display: 'standalone', orientation: 'any', background_color: C.escura, theme_color: C.escura,
     icons: [
-      { src: `../assets/icons/${app}-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any' },
-      { src: `../assets/icons/${app}-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any' },
-      { src: `../assets/icons/${app}-maskable-512.png`, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      { src: `../assets/icons/${app}-192.png?v=${V}`, sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: `../assets/icons/${app}-512.png?v=${V}`, sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: `../assets/icons/${app}-maskable-512.png?v=${V}`, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
   }, null, 2) + '\n');
 }
 
-gravar('index.html', `<!doctype html>
+gravar('index.html', comVersao(`<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
@@ -79,15 +89,20 @@ gravar('index.html', `<!doctype html>
 <script>if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});</script>
 </body>
 </html>
-`);
+`));
 
 // ---------- Ícones ----------
 // as três barras crescentes (iguais às do EasyAPP Financial), centradas; no maskable, menores (área segura)
 const desenho = (a, tam, margem) => {
-  const k = margem ? 0.72 : 1, w = 17 * k, gap = 9 * k, alturas = [26, 44, 67].map((h) => h * k), base = 50 + 33.5 * k;
-  const x0 = 50 - (3 * w + 2 * gap) / 2;
-  const barra = (i) => `<rect x="${x0 + i * (w + gap)}" y="${base - alturas[i]}" width="${w}" height="${alturas[i]}" rx="${4.5 * k}" fill="${i === 2 ? a.b : a.a}"/>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${tam}" height="${tam}" viewBox="0 0 100 100"><rect width="100" height="100" rx="${margem ? 0 : 22}" fill="${a.fundo}"/>${[0, 1, 2].map(barra).join('')}</svg>`;
+  // as três barras; com selo, um pouco menores e para a esquerda, e o selo "G" (gestão) no canto inferior direito
+  const s = a.selo ? 0.86 : 1, dx = a.selo ? -5 : 0, dy = a.selo ? -4 : 0;
+  const w = 17 * s, gap = 9 * s, alturas = [26, 44, 67].map((h) => h * s), base = 50 + 33.5 * s + dy, x0 = 50 - (3 * w + 2 * gap) / 2 + dx;
+  const barra = (i) => `<rect x="${x0 + i * (w + gap)}" y="${base - alturas[i]}" width="${w}" height="${alturas[i]}" rx="${4.5 * s}" fill="${i === 2 ? a.b : a.a}"/>`;
+  const selo = a.selo ? `<circle cx="76" cy="76" r="17" fill="${a.fundo}"/><circle cx="76" cy="76" r="13" fill="#FFFFFF"/>` +
+    `<text x="76" y="81.2" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="15" fill="${a.fundo}">G</text>` : '';
+  const k = margem ? 0.74 : 1; // maskable: tudo dentro da área segura (o Android recorta em círculo)
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${tam}" height="${tam}" viewBox="0 0 100 100"><rect width="100" height="100" rx="${margem ? 0 : 22}" fill="${a.fundo}"/>` +
+    `<g transform="translate(50 50) scale(${k}) translate(-50 -50)">${[0, 1, 2].map(barra).join('')}${selo}</g></svg>`;
 };
 mkdirSync(new URL('assets/icons/', raiz), { recursive: true });
 let pw;

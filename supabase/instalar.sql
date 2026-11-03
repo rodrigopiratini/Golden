@@ -109,6 +109,16 @@ create table if not exists golden.tentativas_login (
 
 create table if not exists golden.plataforma_admins (email text primary key);
 
+-- Visita de suporte: o administrador da plataforma abre uma empresa pelo próprio app (com o login dele,
+-- verificação em duas etapas e prazo). Enquanto vale, o app enxerga aquela empresa como o dono enxerga.
+create table if not exists golden.suporte_visitas (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  empresa_id uuid not null references golden.empresas(id) on delete cascade,
+  modo text not null check (modo in ('leitura', 'edicao')),
+  desde timestamptz not null default now(),
+  ate timestamptz not null
+);
+
 create table if not exists golden.atividade (
   id bigint generated always as identity primary key,
   empresa_id uuid references golden.empresas(id) on delete cascade,
@@ -126,13 +136,37 @@ create table if not exists golden.atividade (
 create index if not exists atividade_empresa_idx on golden.atividade (empresa_id, em desc);
 
 -- ---------- Funções auxiliares ----------
+create or replace function golden.eh_admin() returns boolean
+language sql stable security definer set search_path = golden, public, extensions as
+$$ select coalesce((auth.jwt()->>'is_anonymous')::boolean, false) = false
+      and exists (select 1 from golden.plataforma_admins where lower(email) = lower(auth.jwt()->>'email')) $$;
+
+-- Visita de suporte em vigor: só para administrador, dentro do prazo e com a verificação em duas etapas
+-- feita nesta sessão (aal2). Sem isso as funções abaixo ignoram a visita.
+create or replace function golden.visita_empresa() returns uuid
+language sql stable security definer set search_path = golden, public, extensions as
+$$ select v.empresa_id from golden.suporte_visitas v
+    where v.user_id = auth.uid() and v.ate > now() and coalesce(auth.jwt()->>'aal', '') = 'aal2' and golden.eh_admin() $$;
+
+create or replace function golden.visita_modo(p_empresa uuid) returns text
+language sql stable security definer set search_path = golden, public, extensions as
+$$ select v.modo from golden.suporte_visitas v
+    where v.user_id = auth.uid() and v.empresa_id = p_empresa and v.ate > now() and coalesce(auth.jwt()->>'aal', '') = 'aal2' and golden.eh_admin() $$;
+
+-- Visita "só ver": o banco recusa qualquer gravação nessa empresa
+create or replace function golden.so_leitura(p_empresa uuid) returns boolean
+language sql stable security definer set search_path = golden, public, extensions as
+$$ select coalesce(golden.visita_modo(p_empresa) = 'leitura', false) $$;
+
 create or replace function golden.eh_gestao(p_empresa uuid) returns boolean
 language sql stable security definer set search_path = golden, public, extensions as
-$$ select exists (select 1 from golden.perfis where user_id = auth.uid() and empresa_id = p_empresa and papel in ('dono', 'gestor')) $$;
+$$ select exists (select 1 from golden.perfis where user_id = auth.uid() and empresa_id = p_empresa and papel in ('dono', 'gestor'))
+       or golden.visita_modo(p_empresa) is not null $$;
 
 create or replace function golden.eh_dono(p_empresa uuid) returns boolean
 language sql stable security definer set search_path = golden, public, extensions as
-$$ select exists (select 1 from golden.perfis where user_id = auth.uid() and empresa_id = p_empresa and papel = 'dono') $$;
+$$ select exists (select 1 from golden.perfis where user_id = auth.uid() and empresa_id = p_empresa and papel = 'dono')
+       or golden.visita_modo(p_empresa) is not null $$;
 
 create or replace function golden.meu_ref(p_empresa uuid) returns text
 language sql stable security definer set search_path = golden, public, extensions as
@@ -140,12 +174,7 @@ $$ select ref from golden.perfis where user_id = auth.uid() and empresa_id = p_e
 
 create or replace function golden.minha_empresa() returns uuid
 language sql stable security definer set search_path = golden, public, extensions as
-$$ select empresa_id from golden.perfis where user_id = auth.uid() $$;
-
-create or replace function golden.eh_admin() returns boolean
-language sql stable security definer set search_path = golden, public, extensions as
-$$ select coalesce((auth.jwt()->>'is_anonymous')::boolean, false) = false
-      and exists (select 1 from golden.plataforma_admins where lower(email) = lower(auth.jwt()->>'email')) $$;
+$$ select coalesce(golden.visita_empresa(), (select empresa_id from golden.perfis where user_id = auth.uid())) $$;
 
 -- Empresa em dia: teste dentro do prazo, ou ativa com pagamento até 5 dias atrasado
 create or replace function golden.empresa_liberada(p_empresa uuid) returns boolean
@@ -170,6 +199,7 @@ create or replace function golden.pode_gravar(p_empresa uuid, p_colecao text, p_
 language plpgsql stable security definer set search_path = golden, public, extensions as $$
 declare v_ref text; c golden.colecoes;
 begin
+  if golden.so_leitura(p_empresa) then return false; end if;
   if not golden.empresa_liberada(p_empresa) then return false; end if;
   if golden.eh_gestao(p_empresa) then return true; end if;
   v_ref := golden.meu_ref(p_empresa);
@@ -240,16 +270,45 @@ create trigger tg_apagar_acesso after delete on golden.acessos for each row exec
 -- ---------- Entrada e cadastro ----------
 create or replace function golden.meu_perfil() returns json
 language sql stable security definer set search_path = golden, public, extensions as $$
+  -- visita de suporte em vigor: o administrador vê a empresa visitada como o dono
+  select json_build_object(
+    'papel', 'dono', 'empresaId', e.id, 'ref', null, 'admin', true, 'email', auth.jwt()->>'email',
+    'suporte', json_build_object('modo', v.modo, 'ate', v.ate),
+    'empresa', json_build_object('nome', e.nome, 'situacao', e.situacao, 'plano', e.plano, 'testeAte', e.teste_ate,
+                                 'pagoAte', e.pago_ate, 'liberada', golden.empresa_liberada(e.id)))
+  from golden.suporte_visitas v join golden.empresas e on e.id = v.empresa_id
+  where v.user_id = auth.uid() and v.empresa_id = golden.visita_empresa()
+  union all
   select json_build_object(
     'papel', p.papel, 'empresaId', p.empresa_id, 'ref', p.ref, 'admin', golden.eh_admin(),
     'email', (select email from auth.users where id = auth.uid()),
     'empresa', json_build_object('nome', e.nome, 'situacao', e.situacao, 'plano', e.plano, 'testeAte', e.teste_ate,
                                  'pagoAte', e.pago_ate, 'liberada', golden.empresa_liberada(e.id)))
-  from golden.perfis p join golden.empresas e on e.id = p.empresa_id where p.user_id = auth.uid()
+  from golden.perfis p join golden.empresas e on e.id = p.empresa_id where p.user_id = auth.uid() and golden.visita_empresa() is null
   union all
   select json_build_object('papel', null, 'admin', true, 'email', auth.jwt()->>'email')
-  where golden.eh_admin() and not exists (select 1 from golden.perfis where user_id = auth.uid())
+  where golden.eh_admin() and golden.visita_empresa() is null and not exists (select 1 from golden.perfis where user_id = auth.uid())
 $$;
+
+-- Administrador: abre uma empresa no próprio app (só ver ou ver e corrigir) por 2 horas.
+-- Exige a verificação em duas etapas nesta sessão. Fica no registro de atividades da empresa.
+create or replace function golden.suporte_abrir(p_empresa uuid, p_modo text) returns json
+language plpgsql security definer set search_path = golden, public, extensions as $$
+declare v_modo text := case when p_modo = 'edicao' then 'edicao' else 'leitura' end;
+begin
+  if not golden.eh_admin() then raise exception 'Sem permissão'; end if;
+  if coalesce(auth.jwt()->>'aal', '') <> 'aal2' then raise exception 'MFA: confirme o código de verificação em duas etapas'; end if;
+  if not exists (select 1 from golden.empresas where id = p_empresa) then raise exception 'Empresa não encontrada'; end if;
+  insert into golden.suporte_visitas (user_id, empresa_id, modo, desde, ate) values (auth.uid(), p_empresa, v_modo, now(), now() + interval '2 hours')
+    on conflict (user_id) do update set empresa_id = excluded.empresa_id, modo = excluded.modo, desde = excluded.desde, ate = excluded.ate;
+  insert into golden.atividade (empresa_id, user_id, papel, quem, acao, depois)
+  values (p_empresa, auth.uid(), 'suporte', 'Suporte (' || coalesce(auth.jwt()->>'email', '') || ')', 'acesso', jsonb_build_object('modo', v_modo));
+  return golden.meu_perfil();
+end $$;
+
+create or replace function golden.suporte_sair() returns void
+language sql security definer set search_path = golden, public, extensions as
+$$ delete from golden.suporte_visitas where user_id = auth.uid() $$;
 
 -- Cadastro livre: quem cria a conta com e-mail cria a própria empresa (vira dono, em período de teste)
 create or replace function golden.criar_empresa(p_nome text) returns uuid
@@ -307,7 +366,7 @@ create or replace function golden.criar_convite(p_nome text) returns text
 language plpgsql security definer set search_path = golden, public, extensions as $$
 declare v_codigo text := golden.gerar_codigo(8); v_emp uuid := golden.minha_empresa();
 begin
-  if not golden.eh_dono(v_emp) then raise exception 'Somente o dono pode convidar gestores'; end if;
+  if not golden.eh_dono(v_emp) or golden.so_leitura(v_emp) then raise exception 'Somente o dono pode convidar gestores'; end if;
   insert into golden.convites (codigo, empresa_id, nome, criado_por) values (v_codigo, v_emp, nullif(trim(p_nome), ''), auth.uid());
   return v_codigo;
 end $$;
@@ -328,14 +387,14 @@ create or replace function golden.remover_gestor(p_user uuid) returns void
 language plpgsql security definer set search_path = golden, public, extensions as $$
 declare v_emp uuid := golden.minha_empresa();
 begin
-  if not golden.eh_dono(v_emp) then raise exception 'Somente o dono pode remover gestores'; end if;
+  if not golden.eh_dono(v_emp) or golden.so_leitura(v_emp) then raise exception 'Somente o dono pode remover gestores'; end if;
   delete from golden.perfis where user_id = p_user and empresa_id = v_emp and papel = 'gestor';
 end $$;
 
 create or replace function golden.cancelar_convite(p_codigo text) returns void
 language plpgsql security definer set search_path = golden, public, extensions as $$
 begin
-  if not golden.eh_dono(golden.minha_empresa()) then raise exception 'Sem permissão'; end if;
+  if not golden.eh_dono(golden.minha_empresa()) or golden.so_leitura(golden.minha_empresa()) then raise exception 'Sem permissão'; end if;
   delete from golden.convites where codigo = upper(p_codigo) and empresa_id = golden.minha_empresa() and usado_por is null;
 end $$;
 
@@ -344,6 +403,7 @@ create or replace function golden.atividade_autor(out o_papel text, out o_quem t
 language plpgsql stable security definer set search_path = golden, public, extensions as $$
 begin
   if auth.uid() is null then o_quem := 'Sistema'; return; end if;
+  if golden.visita_empresa() is not null then o_papel := 'suporte'; o_quem := 'Suporte (' || coalesce(auth.jwt()->>'email', '') || ')'; return; end if;
   select papel, ref into o_papel, o_ref from golden.perfis where user_id = auth.uid();
   if o_papel = 'usuario' then o_quem := (select nome from golden.acessos where empresa_id = golden.minha_empresa() and ref = o_ref);
   else o_quem := (select email from auth.users where id = auth.uid()); end if;
@@ -399,7 +459,7 @@ end $$;
 -- Presença: o app aberto manda um sinal a cada 2 minutos (o painel de gestão mostra quem está conectado)
 create or replace function golden.sinal() returns void
 language sql security definer set search_path = golden, public, extensions as $$
-  update golden.perfis set visto_em = now() where user_id = auth.uid();
+  update golden.perfis set visto_em = now() where user_id = auth.uid() and golden.visita_empresa() is null;
 $$;
 
 create or replace function golden.atividade_log(p_antes timestamptz default null, p_user uuid default null, p_desde timestamptz default null, p_limite int default 300) returns json
@@ -446,7 +506,8 @@ end $$;
 do $$ declare f text; begin
   foreach f in array array['criar_empresa(text)', 'entrar_convite(text)', 'vincular_usuario(text, text)', 'criar_convite(text)', 'equipe()',
     'remover_gestor(uuid)', 'cancelar_convite(text)', 'registrar_acesso()', 'sinal()', 'atividade_log(timestamptz, uuid, timestamptz, int)',
-    'plataforma_empresas()', 'plataforma_atualizar(uuid, text, text, date, date, numeric, text)', 'meu_perfil()'] loop
+    'plataforma_empresas()', 'plataforma_atualizar(uuid, text, text, date, date, numeric, text)', 'meu_perfil()',
+    'suporte_abrir(uuid, text)', 'suporte_sair()'] loop
     execute format('revoke all on function golden.%s from public, anon', f);
     execute format('grant execute on function golden.%s to authenticated', f);
   end loop;
@@ -463,6 +524,7 @@ alter table golden.convites enable row level security;
 alter table golden.tentativas_login enable row level security;
 alter table golden.plataforma_admins enable row level security;
 alter table golden.atividade enable row level security;
+alter table golden.suporte_visitas enable row level security;
 
 do $$ declare r record; begin
   for r in select policyname, tablename from pg_policies where schemaname = 'golden' and policyname like 'ea_%' loop
@@ -476,15 +538,17 @@ create policy ea_alterar on golden.docs for update to authenticated using (golde
 create policy ea_apagar on golden.docs for delete to authenticated using (golden.pode_gravar(empresa_id, colecao, ref, data));
 
 create policy ea_empresa on golden.empresas for select to authenticated using (id = golden.minha_empresa());
-create policy ea_empresa_nome on golden.empresas for update to authenticated using (golden.eh_dono(id)) with check (golden.eh_dono(id));
+create policy ea_empresa_nome on golden.empresas for update to authenticated using (golden.eh_dono(id) and not golden.so_leitura(id)) with check (golden.eh_dono(id) and not golden.so_leitura(id));
 create policy ea_colecoes on golden.colecoes for select to authenticated using (true);
 create policy ea_perfil on golden.perfis for select to authenticated using (user_id = auth.uid() or golden.eh_gestao(empresa_id));
-create policy ea_acessos on golden.acessos for all to authenticated using (golden.eh_gestao(empresa_id)) with check (golden.eh_gestao(empresa_id) and golden.empresa_liberada(empresa_id));
+create policy ea_acessos_ler on golden.acessos for select to authenticated using (golden.eh_gestao(empresa_id));
+create policy ea_acessos on golden.acessos for all to authenticated using (golden.eh_gestao(empresa_id) and not golden.so_leitura(empresa_id))
+  with check (golden.eh_gestao(empresa_id) and not golden.so_leitura(empresa_id) and golden.empresa_liberada(empresa_id));
 
 grant select, insert, update, delete on golden.docs, golden.acessos to authenticated;
 grant select on golden.colecoes, golden.perfis to authenticated;
 grant select, update (nome) on golden.empresas to authenticated;
-revoke all on golden.convites, golden.tentativas_login, golden.plataforma_admins, golden.atividade from anon, authenticated;
+revoke all on golden.convites, golden.tentativas_login, golden.plataforma_admins, golden.atividade, golden.suporte_visitas from anon, authenticated;
 
 -- ---------- Tempo real ----------
 do $$ begin

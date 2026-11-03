@@ -64,6 +64,40 @@ function novoContato(inicial = null) {
     onSalvo: (c, novo) => { if (novo && c) A.store.commit((s) => D.registrar(s, c.id, 'nota', 'Cadastrado manualmente')); } });
 }
 
+// ---------- Botão + e assistente: o que dá para fazer em cada tela ----------
+function maisDaTela(rota, p, s) {
+  const it = (icone, texto, act, dados) => ({ icone, texto, act, dados });
+  const contatos = [it('plus', 'Novo contato', 'novoContato'), it('upload', 'Importar planilha', 'importar')];
+  if (rota === '/contato/:id' || rota === '/conversa/:id') {
+    const c = D.contato(s, p.id);
+    if (!c) return contatos;
+    return [rota === '/contato/:id' ? { icone: 'whatsapp', texto: 'Abrir conversa', h: '#/conversa/' + c.id } : { icone: 'user', texto: 'Ver contato', h: '#/contato/' + c.id },
+      c.naoContatar ? null : it('file', 'Enviar mensagem modelo', 'enviarModelo', { id: c.id }), it('edit', 'Editar contato', 'editarContato', { id: c.id }), it('link', 'Copiar link do catálogo', 'copiarLink', { id: c.id }),
+      { icone: 'spark', texto: 'Sugerir a próxima mensagem', ia: `Sugira a próxima mensagem para ${c.nome}, pelo histórico da conversa e a etapa do funil.`, enviar: true }];
+  }
+  if (rota === '/campanha/:id') return [it('whatsapp', 'Enviar a próxima onda', 'onda', { id: p.id }), it('spark', 'Nova campanha', 'novaCampanha')];
+  return {
+    '/painel': [...contatos, it('spark', 'Nova campanha', 'novaCampanha')],
+    '/funil': contatos, '/contatos': [...contatos, it('download', 'Exportar contatos', 'exportar')],
+    '/campanhas': [it('spark', 'Nova campanha', 'novaCampanha')],
+    '/catalogo': [it('store', 'Novo produto', 'novoProduto')],
+    '/modelos': [it('file', 'Novo modelo de mensagem', 'novoModelo')],
+  }[rota] || contatos;
+}
+function sugestoesDaTela(rota, p, s) {
+  if (rota === '/contato/:id' || rota === '/conversa/:id') { const c = D.contato(s, p.id); return c ? [`Resuma o histórico de ${c.nome}`] : []; }
+  if (rota === '/campanha/:id') return ['Como está indo esta campanha?'];
+  return {
+    '/painel': ['Quais contatos estão mais perto de comprar?', 'Qual origem de contatos vende mais?'],
+    '/funil': ['Quem está parado no funil há mais de 7 dias?', 'Quanto tenho em negociação?'],
+    '/contatos': ['Tem contato duplicado ou com telefone estranho?', 'Quantos contatos tenho por segmento?'],
+    '/campanhas': ['Qual campanha teve a melhor taxa de resposta?'],
+    '/conversas': ['Quem está esperando resposta?'],
+    '/catalogo': ['Quais produtos receberam mais cliques?'],
+    '/modelos': ['Escreva um modelo de mensagem para a campanha de Natal'],
+  }[rota] || [];
+}
+
 // ---------- App ----------
 const A = criarApp({
   tipo: 'gestao',
@@ -75,6 +109,10 @@ const A = criarApp({
   ativo: (h, r) => (h === '#/contatos' && r.startsWith('#/contato/')) || (h === '#/campanhas' && r.startsWith('#/campanha/')) || (h === '#/conversas' && r.startsWith('#/conversa/')),
   rotas: [['/painel', vPainel], ['/funil', vFunil], ['/contatos', vContatos], ['/contato/:id', vContato], ['/campanhas', vCampanhas], ['/campanha/:id', vCampanha],
     ['/conversas', vConversas], ['/conversa/:id', vConversas], ['/catalogo', vCatalogo], ['/modelos', vModelos]],
+  mais: (rota, p, s) => maisDaTela(rota, p, s),
+  sugestoes: (rota, p, s) => sugestoesDaTela(rota, p, s),
+  iaExtras: (s) => ({ marcos_contatos: { nome: 'Indicadores do funil por contato (calculado)', docs: D.marcos(s).map(({ c, ...m }) => ({ id: 'mc_' + c.id, contatoId: c.id, etapa: c.etapa, segmento: c.segmento, origem: c.origem || null,
+    enviado: !!m.enviado, entregue: !!m.entregue, lido: !!m.lido, respondeu: !!m.respondeu, clicou: !!m.clicou })) } }),
   camposEmpresa: [['whatsapp', 'WhatsApp da loja (botão "Quero este" do catálogo)', '5554999999999'], ['siteUrl', 'Site da loja', 'https://…'], ['limiteDiario', 'Limite diário de envios (Meta)', '250']],
   configExtra: (s) => `<div class="card col"><h2>WhatsApp oficial</h2>
     <div class="small ink2">${whatsappAtivo() ? `${icon('check')} Conectado à Cloud API da Meta: as campanhas e respostas saem de verdade.` : `<b>Modo simulação:</b> tudo funciona, mas nada é enviado de verdade. Em Conversas aparece "Simular resposta do cliente" para testar o fluxo inteiro.`}</div>

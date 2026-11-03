@@ -67,7 +67,7 @@ export function criarNuvem(app, hooks) {
     for (const c of COLECOES) state[c] = [];
     for (const d of docs) {
       if (d.colecao === 'config') { if (d.id === 'geral') state.meta = { ...d.data, demo: false }; }
-      else if (state[d.colecao]) state[d.colecao].push(d.data);
+      else if (state[d.colecao]) state[d.colecao].push({ ...d.data, id: d.id }); // o id da linha manda (dados importados podem vir sem ele)
     }
     state.meta.empresa ||= perfil.empresa?.nome || '';
     for (const op of fila) aplicarLocal(op); // o que ainda não foi enviado prevalece sobre o servidor
@@ -147,13 +147,14 @@ export function criarNuvem(app, hooks) {
       const c = p.new.colecao;
       if (c === 'config') { if (id === 'geral') { state.meta = { ...p.new.data, demo: false }; snap.meta = JSON.stringify(state.meta); hooks.onChange?.('config', true); } return; }
       if (!state[c]) return;
-      const j = JSON.stringify(p.new.data);
+      const doc = { ...p.new.data, id };
+      const j = JSON.stringify(doc);
       if (snap[c].get(id) === j) return; // eco da própria gravação
       const i = state[c].findIndex((x) => x.id === id);
       const antes = i >= 0 ? state[c][i] : null;
-      if (i >= 0) state[c][i] = p.new.data; else state[c].push(p.new.data);
+      if (i >= 0) state[c][i] = doc; else state[c].push(doc);
       snap[c].set(id, j);
-      hooks.onChange?.(c, true, { colecao: c, doc: p.new.data, antes, novo: !antes });
+      hooks.onChange?.(c, true, { colecao: c, doc, antes, novo: !antes });
     });
     canal.subscribe();
   }
@@ -172,7 +173,18 @@ export function criarNuvem(app, hooks) {
     ouvir();
     enviar();
     sb.rpc('registrar_acesso').then(({ error }) => error && console.warn('registrar_acesso', error.message));
+    sinalPresenca();
     return true;
+  }
+  // Presença: enquanto o app está aberto e visível, avisa o banco a cada 2 minutos (o painel mostra quem está conectado).
+  // O modo suporte não conta como presença do cliente.
+  let presenca = null;
+  function sinalPresenca() {
+    if (suporte || presenca) return;
+    const bater = () => { if (document.visibilityState === 'visible') sb.rpc('sinal').then(() => {}, () => {}); };
+    bater();
+    presenca = setInterval(bater, 120000);
+    document.addEventListener('visibilitychange', bater);
   }
 
   const erroLogin = (m) => (m === 'Invalid login credentials' ? 'E-mail ou senha incorretos' : m === 'Email not confirmed' ? 'Confirme o e-mail antes de entrar (veja sua caixa de entrada)' : m);

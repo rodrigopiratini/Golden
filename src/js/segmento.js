@@ -18,6 +18,20 @@ export const SEGMENTO = {
   gestao: { nome: 'Golden CRM', curto: 'CRM', descricao: 'Contatos, funil, campanhas pelo WhatsApp, conversas e catálogo.' },
   usuario: null,                          // sem app de campo: a equipe entra pela Gestão (convite de gestor)
 
+  // Assistente (IA): o que ele precisa saber deste negócio
+  assistente: {
+    instrucoes: [
+      'Golden Artefatos de Madeira: CRM de contatos, funil de vendas, campanhas de WhatsApp e catálogo de produtos.',
+      'Contato: nome, telefone no formato do WhatsApp (só dígitos: 55 + DDD + número, ex.: 5554999991234; não repita telefone que já existe), email, cidade, uf,',
+      'segmento cliente | feira | b2b | outro, origem (texto), valorNegocio, ultimaCompra, obs, tags (lista). Contato novo: etapa "novo", naoContatar false, tags [] e token = 10 letras/números minúsculos aleatórios.',
+      'Etapas do funil: novo, enviado, lido, respondeu, interessado, negociando, ganho (vendido), perdido, nao_contatar. Ao mudar a etapa: atualize etapa e ultimaInteracao (data e hora ISO),',
+      'naoContatar = (etapa == nao_contatar), e crie em atividades { contatoId, tipo: "etapa", texto: "Etapa antiga → Etapa nova (assistente)", em: data e hora ISO }. Nota no contato: atividades { contatoId, tipo: "nota", texto, em }.',
+      'Nunca proponha contatar quem está em nao_contatar ou naoContatar true. Você NÃO envia mensagens de WhatsApp: para isso o usuário usa a conversa ou as campanhas; você pode sugerir o texto.',
+      'Produto (catálogo): nome, categoria (Mesa Posta | Petiscar | Churrasco | Iluminar | Organize | Personalize), selo (NOVO | OFERTA | MAIS VENDIDO), preco, precoPromo, imagem, urlSite, ordem, ativo.',
+      'Indicadores do funil por contato (enviado, entregue, lido, respondeu, clicou) estão na coleção calculada marcos_contatos.',
+    ].join(' '),
+  },
+
   colecoes: {
     contatos: { nome: 'Contatos' },
     mensagens: { nome: 'Mensagens' },

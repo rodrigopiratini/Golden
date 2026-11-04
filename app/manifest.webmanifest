@@ -1,0 +1,33 @@
+{
+  "id": "golden-crm-app",
+  "name": "Golden CRM",
+  "short_name": "Golden CRM",
+  "description": "Contatos de clientes e feiras viram vendas: WhatsApp oficial, catálogo rastreado e funil de vendas.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#2B2B2B",
+  "theme_color": "#2B2B2B",
+  "icons": [
+    {
+      "src": "../assets/icons/app-192.png?v=9c783c7d",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icons/app-512.png?v=9c783c7d",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../assets/icons/app-maskable-512.png?v=9c783c7d",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

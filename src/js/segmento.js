@@ -9,6 +9,8 @@ export const SEGMENTO = {
   slogan: 'Contatos de clientes e feiras viram vendas: WhatsApp oficial, catálogo rastreado e funil de vendas.',
   icone: 'whatsapp',
   logo: 'assets/brand/logo-white.png',
+  simbolo: 'assets/brand/symbol-white.png',      // ícone do app: o símbolo da marca do cliente
+  exclusivo: true,                       // app de um cliente só: sem cadastro livre, teste nem planos
 
   suporte: { nome: 'EasyApp', whatsapp: '', email: '' },
   plataforma: { admins: [] },
